@@ -22,7 +22,7 @@ There are two generator fragments to add:
 * IdeaPluginGenerator generates Intellij IDEA Language Plugin project.
 
 Configuration example:
-
+```
 //Added before workflow declaration
 var pluginsPath = "c:/eclipse-SDK-4.2-Xtext-2.3.1-win32/plugins"
 
@@ -45,6 +45,7 @@ fragment = idea.IdeaPluginGenerator {
 	library = "${pluginsPath}/org.eclipse.xtext.generator_2.3.1.v201208210947.jar"
 	library = "${pluginsPath}/org.eclipse.xtext.generator.idea_1.0.0.jar"
 }
+```
 
 **5. Run Language Generation workflow and export plugins again.**
 
