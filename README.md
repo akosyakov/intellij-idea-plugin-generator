@@ -34,10 +34,10 @@ component = Generator {
 		fragment = idea.PsiAntlrGeneratorFragment {}
 
 		fragment = idea.IdeaPluginGenerator {
-			//Will be used only the first extension
+			//Only the first extension will be used 
 			fileExtensions = file.extensions
 
-			//Path to generating Intellij IDEA Language Plugin; you will open it late via Intellij Idea
+			//Path to generating Intellij IDEA Language Plugin; you will open it later via Intellij Idea
 			pathIdeaPluginProject = "${runtimeProject}.idea"
 
 			//Paths to required dependencies; check that specified dependencies exist
