@@ -56,7 +56,7 @@ component = Generator {
 
 **5. Run Language Generation workflow and export plugins again.**
 
-You will be able to find generated files under src-gen folder. For example for domain model language check org.example.domainmodel.domainmodel.lang package.
+You will be able to find generated files under src-gen folder. For example for domain model language check org.example.domainmodel.lang package.
 
 **6. Open Intellij IDEA (supported version 12 and above) and open the generated Intellij IDEA language plugin.**
 

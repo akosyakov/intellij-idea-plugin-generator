@@ -62,11 +62,11 @@ class IdeaPluginExtension {
 	}
 	
 	def getSimpleName(Grammar grammar) {
-		grammar.name.substring(grammar.name.lastIndexOf(".") + 1)
+		GrammarUtil::getName(grammar);
 	}
 	
 	def getPackageName(Grammar grammar) {
-		grammar.name.toLowerCase;
+		GrammarUtil::getNamespace(grammar);
 	}
 	
 	def getPath(String packageName) {

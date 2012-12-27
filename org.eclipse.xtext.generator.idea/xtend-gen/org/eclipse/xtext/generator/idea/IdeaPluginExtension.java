@@ -22,7 +22,6 @@ import org.eclipse.xtext.xbase.lib.CollectionExtensions;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Functions.Function0;
 import org.eclipse.xtext.xbase.lib.Functions.Function1;
-import org.eclipse.xtext.xbase.lib.IntegerExtensions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 import org.eclipse.xtext.xbase.lib.ObjectExtensions;
@@ -109,18 +108,13 @@ public class IdeaPluginExtension {
   }
   
   public String getSimpleName(final Grammar grammar) {
-    String _name = grammar.getName();
-    String _name_1 = grammar.getName();
-    int _lastIndexOf = _name_1.lastIndexOf(".");
-    int _operator_plus = IntegerExtensions.operator_plus(_lastIndexOf, 1);
-    String _substring = _name.substring(_operator_plus);
-    return _substring;
+    String _name = GrammarUtil.getName(grammar);
+    return _name;
   }
   
   public String getPackageName(final Grammar grammar) {
-    String _name = grammar.getName();
-    String _lowerCase = _name.toLowerCase();
-    return _lowerCase;
+    String _namespace = GrammarUtil.getNamespace(grammar);
+    return _namespace;
   }
   
   public String getPath(final String packageName) {

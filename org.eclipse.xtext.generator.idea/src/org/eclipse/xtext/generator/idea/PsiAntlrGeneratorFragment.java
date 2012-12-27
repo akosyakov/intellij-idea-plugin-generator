@@ -12,7 +12,8 @@ public class PsiAntlrGeneratorFragment extends AbstractAntlrGeneratorFragment {
 	public void generate(Grammar grammar, XpandExecutionContext ctx) {
 		super.generate(grammar, ctx);
 		String srcGenPath = ctx.getOutput().getOutlet(Generator.SRC_GEN).getPath();
-		String absoluteGrammarFileName = srcGenPath + "/" + getGrammarFileName(grammar, getNaming()).replace('.', '/') + ".g";
+		String absoluteGrammarFileName = srcGenPath + "/" + getGrammarFileName(grammar, getNaming()).replace('.', '/')
+				+ ".g";
 		addAntlrParam("-fo");
 		addAntlrParam(absoluteGrammarFileName.substring(0, absoluteGrammarFileName.lastIndexOf('/')));
 		getAntlrTool().runWithParams(absoluteGrammarFileName, getAntlrParams());
@@ -23,7 +24,7 @@ public class PsiAntlrGeneratorFragment extends AbstractAntlrGeneratorFragment {
 
 	public static String getGrammarFileName(Grammar g, Naming naming) {
 		String grammarName = GrammarUtil.getName(g);
-		return naming.basePackageRuntime(g) + "." + grammarName.toLowerCase() + ".lang.parsing.Psi" + grammarName;
+		return naming.basePackageRuntime(g) + ".lang.parsing.Psi" + grammarName;
 	}
 
 }
