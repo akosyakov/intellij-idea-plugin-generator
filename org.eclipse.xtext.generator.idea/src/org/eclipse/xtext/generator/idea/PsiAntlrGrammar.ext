@@ -1,0 +1,32 @@
+import org::eclipse::xtext;
+import org::eclipse::xtext::generator;
+
+extension org::eclipse::xtext::GrammarUtil;
+extension org::eclipse::xtext::generator::Naming;
+
+elementTypes(AbstractRule abstractRule): 
+	'PsiElementTypes'
+;
+
+entityTypeName(AbstractRule abstractRule):
+	abstractRule.elementTypes() + '.' + abstractRule.name.toUpperCase()
+;
+
+entityTypeName(Assignment assignment):
+	assignment.containingRule().entityTypeName() + '_'  + assignment.feature.toUpperCase()
+;
+
+entityTypeName(AbstractElement element):
+	element.containingAssignment().entityTypeName()
+;
+
+entityTypeName(EnumLiteralDeclaration enumLiteralDeclaration):
+	enumLiteralDeclaration.containingRule().entityTypeName() + '_'  + enumLiteralDeclaration.enumLiteral.literal.toUpperCase()
+;
+
+String getGrammarFileName(Grammar grammar):
+	getGrammarFileName(grammar, getNaming());
+	
+private String getGrammarFileName(Grammar grammar, Naming naming) :
+	JAVA org.eclipse.xtext.generator.idea.PsiAntlrGeneratorFragment.getGrammarFileName(org.eclipse.xtext.Grammar, org.eclipse.xtext.generator.Naming);
+	

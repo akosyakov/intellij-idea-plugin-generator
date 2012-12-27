@@ -1,0 +1,15 @@
+«IMPORT org::eclipse::xtext»
+«IMPORT org::eclipse::xtext::generator::parser::antlr»
+
+«EXTENSION org::eclipse::xtext::generator::parser::antlr::Parser»
+«EXTENSION org::eclipse::xtext::generator::Naming»
+
+«DEFINE generate(AntlrOptions options) FOR Grammar»
+	«EXPAND PsiAntlrGrammar::grammar(options, false)»
+«ENDDEFINE»
+
+«DEFINE addToPluginXmlRt(AntlrOptions options) FOR Grammar»«ENDDEFINE»
+
+«DEFINE addToPluginXmlUi(AntlrOptions options) FOR Grammar»«ENDDEFINE»
+
+«DEFINE addToStandaloneSetup(AntlrOptions options) FOR Grammar»«ENDDEFINE»

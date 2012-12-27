@@ -1,0 +1,347 @@
+«IMPORT org::eclipse::xtext»
+«IMPORT org::eclipse::emf::ecore»
+«IMPORT org::eclipse::xtext::generator::parser::antlr»
+
+«EXTENSION org::eclipse::xtext::generator::Naming»
+«EXTENSION org::eclipse::xtext::generator::parser::antlr::AntlrGrammar»
+«EXTENSION org::eclipse::xtext::EcoreUtils»
+«EXTENSION org::eclipse::xtext::generator::idea::PsiAntlrGrammar»
+
+«DEFINE grammar(AntlrOptions options, boolean debugGrammar) FOR Grammar»
+«FILE (getGrammarFileName().toJavaPackage() + (debugGrammar ? ".Debug" : ".") + getGrammarFileName().toSimpleName()).asPath()+".g" SRC_GEN-»
+/*
+«fileHeader()»
+*/
+grammar «IF debugGrammar»Debug«ENDIF»«getGrammarFileName().toSimpleName()»;
+
+«IF !debugGrammar || options.backtrack || options.memoize || options.k>=0-»
+options {
+«ENDIF-»
+«IF !debugGrammar-»
+	superClass=AbstractPsiAntlrParser;
+«ENDIF-»
+	«IF options.backtrack-»
+	backtrack=true;
+	«ENDIF-»
+	«IF options.memoize-»
+	 memoize=true;
+	«ENDIF-»
+	«IF options.k>=0»
+	 k=«options.k»;
+	«ENDIF»
+«IF !debugGrammar || options.backtrack || options.memoize || options.k>=0-»
+}
+«ENDIF-»
+
+«IF !debugGrammar-»
+@lexer::header {
+package «getGrammarFileName().toJavaPackage()»;
+
+import org.eclipse.xtext.parser.antlr.Lexer;
+}
+
+@parser::header {
+package «getGrammarFileName().toJavaPackage()»;
+
+import com.intellij.lang.PsiBuilder;
+import org.eclipse.xtext.generator.idea.AbstractPsiAntlrParser;
+import org.eclipse.xtext.generator.idea.TokenTypeProvider;
+}
+
+@parser::members {
+«IF options.backtrack-»
+/*
+  This grammar contains a lot of empty actions to work around a bug in ANTLR.
+  Otherwise the ANTLR tool will create synpreds that cannot be compiled in some rare cases.
+*/
+
+«ENDIF-»
+public «getGrammarFileName().toSimpleName()»Parser(PsiBuilder psiBuilder, TokenTypeProvider tokenTypeProvider) {
+	super(psiBuilder, tokenTypeProvider);
+}
+}
+
+@rulecatch { 
+catch (RecognitionException re) { 
+	recover(input, re);
+}
+}
+«ENDIF-»
+«EXPAND antlrRules(options, debugGrammar)»
+«ENDFILE»
+«ENDDEFINE»
+
+«DEFINE antlrRules(AntlrOptions options, boolean debugGrammar) FOR Grammar»
+«EXPAND rule(this, options, debugGrammar) FOREACH allParserRules()»
+«EXPAND rule(this, options, debugGrammar) FOREACH allEnumRules()»
+«EXPAND rule(this, debugGrammar) FOREACH allTerminalRules()»
+«ENDDEFINE»
+
+
+«DEFINE rule(Grammar original, AntlrOptions options, boolean debugGrammar) FOR ParserRule»
+«IF isCalled(original,this)»
+«IF !isDatatypeRule()»
+// Entry rule «entryRuleName()»
+«entryRuleName()» : «ruleName()» EOF ;
+
+// Rule «name»
+«ruleName()» 
+«IF !debugGrammar-» 
+    @init { markRule(«entityTypeName()»); }«ENDIF»: 
+    «EXPAND ebnf(options, debugGrammar) FOR this.alternatives»
+;
+«IF !debugGrammar-»
+finally {
+	doneRule(); 
+} 
+«ENDIF»
+«ELSE»
+// Entry rule «entryRuleName()»
+«entryRuleName()» : «ruleName()» EOF ;
+
+// Rule «name»
+«ruleName()» : 
+	«EXPAND dataTypeEbnf(debugGrammar) FOR this.alternatives» 
+;
+«ENDIF»
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE rule(Grammar original, AntlrOptions options, boolean debugGrammar) FOR EnumRule»
+«IF isCalled(original,this)»
+// Rule «name»
+«ruleName()» 
+«IF !debugGrammar-» 
+    @init { markRule(«entityTypeName()»); }«ENDIF»:
+    «EXPAND ebnf(options, debugGrammar) FOR this.alternatives»
+;
+finally {
+	doneRule(); 
+}
+«ENDIF»
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR EnumLiteralDeclaration-»
+«IF !debugGrammar-»
+	{ mark(«entityTypeName()»); }
+«ENDIF-»
+	'«literal.value.toAntlrString()»'
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE rule(Grammar original, boolean debugGrammar) FOR TerminalRule»
+«IF fragment»fragment «ENDIF»«ruleName()» : «toLexerBody()»«IF debugGrammar && original.initialHiddenTokens().contains(ruleName())» {skip();}«ENDIF»;
+«ENDDEFINE»
+
+«DEFINE ebnf(AntlrOptions options, boolean debugGrammar) FOR AbstractElement-»
+«IF mustBeParenthesized()»(«IF predicated()»(«EXPAND ebnf2(options, true) FOR predicatedElement()»)=>«ENDIF»«EXPAND ebnf2(options, debugGrammar)»)«ELSE»«EXPAND ebnf2(options, debugGrammar)»«ENDIF»«cardinality-»
+«ENDDEFINE»
+
+«DEFINE dataTypeEbnf(boolean debugGrammar) FOR AbstractElement-»
+«IF mustBeParenthesized()»(«IF predicated()»(«EXPAND dataTypeEbnf2(true) FOR predicatedElement()»)=>«ENDIF»«EXPAND dataTypeEbnf2(debugGrammar)»)«ELSE»«EXPAND dataTypeEbnf2(debugGrammar)»«ENDIF»«cardinality-»
+«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR AbstractElement»ERROR «metaType.name» not matched«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR Alternatives-»«EXPAND dataTypeEbnf(debugGrammar) FOREACH elements SEPARATOR '\n    |'»«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR Group»«EXPAND dataTypeEbnf(debugGrammar) FOREACH elements»«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR UnorderedGroup»
+«IF debugGrammar-»
+(«EXPAND dataTypeEbnf(debugGrammar) FOREACH elements SEPARATOR '\n    |'»)*
+«ELSE-»
+«LET elements.reject(e|e.isOptionalCardinality()).size AS mandatoryContent»
+	(
+«FOREACH elements AS element ITERATOR it»
+		«EXPAND dataTypeEbnf2(debugGrammar) FOR element»«IF element.isMultipleCardinality()»+«ENDIF»«IF !it.lastIteration»|«ENDIF»
+«ENDFOREACH»
+	)«IF mandatoryContent != 0-»+«ELSE»*«ENDIF»	
+«ENDLET»
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR Keyword»
+	'«value.toAntlrString()»' 
+«ENDDEFINE»
+
+«DEFINE dataTypeEbnf2(boolean debugGrammar) FOR RuleCall-»
+    «rule.ruleName()»
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR AbstractElement»ERROR «metaType.name» not matched«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR Alternatives-»«EXPAND ebnf(options, debugGrammar) FOREACH elements SEPARATOR '\n    |'»«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR Group-»«EXPAND ebnf(options, debugGrammar) FOREACH elements»«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR UnorderedGroup»
+«IF debugGrammar-»
+(«EXPAND ebnf(options, debugGrammar) FOREACH elements SEPARATOR '\n    |'»)*
+«ELSE-»
+«LET elements.reject(e|e.isOptionalCardinality()).size AS mandatoryContent»
+	(
+«FOREACH elements AS element ITERATOR it»
+		«EXPAND ebnf2(options, debugGrammar) FOR element»«IF element.isMultipleCardinality()»+«ENDIF»«IF !it.lastIteration»|«ENDIF»
+«ENDFOREACH»
+	)«IF mandatoryContent != 0-»+«ELSE»*«ENDIF»
+«ENDLET»
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR AbstractElement-»
+«ERROR "crossrefEbnf is not supported for AbstractElement"»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR Alternatives-»
+		(«EXPAND crossrefEbnf(ref, debugGrammar) FOREACH elements SEPARATOR '\n    |'»)
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR RuleCall-»
+«EXPAND crossrefEbnf(ref, debugGrammar) FOR rule-»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR AbstractRule-»
+«ERROR "crossrefEbnf is not supported for AbstractRule"»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR ParserRule-»
+«IF !isDatatypeRule()-»
+«ERROR "crossrefEbnf is not supported for ParserRule that is not a datatype rule"»
+«ELSE-»
+«IF !debugGrammar-»
+	{ mark(«ref.entityTypeName()»); }
+«ENDIF-»
+	«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR EnumRule-»
+«IF !debugGrammar-»
+	{ mark(«ref.entityTypeName()»); }
+«ENDIF-»
+	«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE crossrefEbnf(CrossReference ref, boolean debugGrammar) FOR TerminalRule-»
+«IF !debugGrammar-»
+	{ mark(«ref.entityTypeName()»); }
+«ENDIF-»
+	«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR AbstractElement-»
+«IF !debugGrammar-»
+	{ mark(«assignment.entityTypeName()»); }
+«ENDIF-»
+«EXPAND ebnf(options, debugGrammar)»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-» 
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR Group-»
+«ERROR "assignmentEbnf is not supported for Group"»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR Assignment-»
+«ERROR "assignmentEbnf is not supported for Assignment"»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR Action-»
+«ERROR "assignmentEbnf is not supported for Action"»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR Alternatives-»
+(
+«EXPAND assignmentEbnf(assignment, options, debugGrammar) FOREACH elements SEPARATOR '\n    |'»
+)
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR RuleCall-»
+«EXPAND assignmentEbnf(assignment, this, debugGrammar) FOR rule-»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, RuleCall call, boolean debugGrammar) FOR AbstractRule-»
+«ERROR "assignmentEbnf is not supported for AbstractRule"»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, RuleCall call, boolean debugGrammar) FOR ParserRule-»
+«IF !debugGrammar-»
+	{ mark(«assignment.entityTypeName()»); }
+«ENDIF-»
+«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, RuleCall call, boolean debugGrammar) FOR EnumRule-»
+«IF !debugGrammar-»
+	{ mark(«assignment.entityTypeName()»); }
+«ENDIF-»
+	«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, RuleCall call, boolean debugGrammar) FOR TerminalRule-»
+«IF !debugGrammar-»
+	{ mark(«assignment.entityTypeName()»); }
+«ENDIF-»
+	«ruleName()»
+«IF !debugGrammar-»
+	{ done(); }
+«ENDIF-»
+«ENDDEFINE»
+
+«DEFINE assignmentEbnf(Assignment assignment, AntlrOptions options, boolean debugGrammar) FOR CrossReference-»
+		«EXPAND crossrefEbnf(this, debugGrammar) FOR terminal-»
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR Assignment»
+(
+«EXPAND assignmentEbnf(this, options, debugGrammar) FOR terminal»
+)
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR CrossReference»
+«ERROR "ebnf2 is not supported for CrossReference"»
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR Action»
+«REM»
+«IF !debugGrammar-»
+«IF options.backtrack-»
+	{ 
+	  /* */ 
+	}
+«ENDIF-»
+    {
+        $current = forceCreateModelElement«IF feature != null-»And«setOrAdd().toFirstUpper()»«ENDIF»(
+            grammarAccess.«grammarElementAccess()»,
+            $current);
+    }
+«ENDIF-»
+«ENDREM»
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR Keyword-»
+	'«value.toAntlrString()»' 
+«ENDDEFINE»
+
+«DEFINE ebnf2(AntlrOptions options, boolean debugGrammar) FOR RuleCall-»
+	«rule.ruleName()-»
+«ENDDEFINE»
