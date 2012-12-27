@@ -21,29 +21,36 @@ There are two generator fragments to add:
 * PsiAntlrGeneratorFragment generates Antlr grammar file and then uses Antlr tool to generate a parser and a lexer which are adapted to work with PsiBuilder.
 * IdeaPluginGenerator generates Intellij IDEA Language Plugin project.
 
-Configuration example:
+Look configuration example and read comments carefully:
 ```
 //Added before workflow declaration
 var pluginsPath = "c:/eclipse-SDK-4.2-Xtext-2.3.1-win32/plugins"
+...
+//Added at the end of Generator
+component = Generator {
+...
+	language = {
+	...
+		fragment = idea.PsiAntlrGeneratorFragment {}
 
-//Added at the end of StandaloneSetup bean declaration
-fragment = idea.PsiAntlrGeneratorFragment {}
+		fragment = idea.IdeaPluginGenerator {
+			//Will be used only the first extension
+			fileExtensions = file.extensions
 
-fragment = idea.IdeaPluginGenerator {
-	fileExtensions = file.extensions
+			//Path to generating Intellij IDEA Language Plugin; you will open it late via Intellij Idea
+			pathIdeaPluginProject = "${runtimeProject}.idea"
 
-	//Path to generating Intellij IDEA Language Plugin
-	pathIdeaPluginProject = "${runtimeProject}.idea"
-
-	//Paths to required dependencies
-	library = "${pluginsPath}/${projectName}_1.0.0.201212271444.jar"
-	library = "${pluginsPath}/org.eclipse.xtext_2.3.1.v201208210947.jar"
-	library = "${pluginsPath}/org.eclipse.emf.ecore_2.8.0.v20120606-0717.jar"
-	library = "${pluginsPath}/org.eclipse.emf.common_2.8.0.v20120606-0717.jar"
-	library = "${pluginsPath}/org.antlr.runtime_3.2.0.v201101311130.jar"
-	library = "${pluginsPath}/org.apache.log4j_1.2.15.v201012070815.jar"
-	library = "${pluginsPath}/org.eclipse.xtext.generator_2.3.1.v201208210947.jar"
-	library = "${pluginsPath}/org.eclipse.xtext.generator.idea_1.0.0.jar"
+			//Paths to required dependencies; check that specified dependencies exist
+			library = "${pluginsPath}/${projectName}_1.0.0.201212271444.jar"
+			library = "${pluginsPath}/org.eclipse.xtext_2.3.1.v201208210947.jar"
+			library = "${pluginsPath}/org.eclipse.emf.ecore_2.8.0.v20120606-0717.jar"
+			library = "${pluginsPath}/org.eclipse.emf.common_2.8.0.v20120606-0717.jar"
+			library = "${pluginsPath}/org.antlr.runtime_3.2.0.v201101311130.jar"
+			library = "${pluginsPath}/org.apache.log4j_1.2.15.v201012070815.jar"
+			library = "${pluginsPath}/org.eclipse.xtext.generator_2.3.1.v201208210947.jar"
+			library = "${pluginsPath}/org.eclipse.xtext.generator.idea_1.0.0.jar"
+		}
+	}
 }
 ```
 
