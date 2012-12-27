@@ -1,7 +1,7 @@
 How to create Intellij IDEA Language Plugin for your DSL?
 =========================================================
 
-** 1. Download Eclipse plugins and add them into plugins directory of your eclipse. **
+**1. Download Eclipse plugins and add them into plugins directory of your eclipse.**
 
 There are two Eclipse plugins:
 * Intellij IDEA SDK (org.eclipse.xtext.idea.sdk_1.0.0.jar): https://github.com/akosyakov/intellij-idea-sdk
@@ -9,13 +9,13 @@ There are two Eclipse plugins:
 
 You can check out the whole project using git or download the last project version as zip via github UI.
 
-** 2. Create or open xText project, define grammar, launch generator and export plugins. **
+**2. Create or open xText project, define grammar, launch generator and export plugins.**
 
-** 3. Add Intellij IDEA plugin generator plugin as dependency to your xText project. **
+**3. Add Intellij IDEA plugin generator plugin as dependency to your xText project.**
 
 1. Open META-INF/MANIFEST.MF -> Dependencies -> Add... -> Select org.eclipse.xtext.generator.idea -> OK -> Save manifest
 
-** 4. Edit Language Generation workflow. **
+**4. Edit Language Generation workflow.**
 
 There are two generator fragments to add:
 * PsiAntlrGeneratorFragment generates Antlr grammar file and then uses Antlr tool to generate a parser and a lexer which are adapted to work with PsiBuilder.
@@ -46,11 +46,11 @@ fragment = idea.IdeaPluginGenerator {
 	library = "${pluginsPath}/org.eclipse.xtext.generator.idea_1.0.0.jar"
 }
 
-** 5. Run Language Generation workflow and export plugins again. **
+**5. Run Language Generation workflow and export plugins again.**
 
 You will be able to find generated files under src-gen folder. For example for domain model language check org.example.domainmodel.domainmodel.lang package.
 
-** 6. Open Intellij IDEA (supported version 12 and above) and open the generated Intellij IDEA language plugin. **
+**6. Open Intellij IDEA (supported version 12 and above) and open the generated Intellij IDEA language plugin.**
 
 1. File -> Open... -> Select the generated Intellij IDEA language plugin directory -> Press OK
 2. Open Project Structure (Ctrl + Alt + Shift + S)
@@ -69,7 +69,7 @@ List of required dependencies:
 * org.apache.log4j_x.jar
 * org.eclipse.xtext.generator.idea_x.jar
 
-** 7. Run Intellij IDEA Language Plugin. **
+**7. Run Intellij IDEA Language Plugin.**
 
 1. Run -> Edit Configurations -> Add New Configuration (Insert) -> Plugin -> specify Name, for example “run DomainModel” -> Apply -> OK
 2. Select the created configuration and press Run (Shift + F10)
@@ -78,7 +78,7 @@ List of required dependencies:
 5. Open and try to edit it
 6. Intellij Idea will highlight keywords, comments, strings and syntactical errors
 
-** 8. Deploy Intellij IDEA Language Plugin **
+**8. Deploy Intellij IDEA Language Plugin**
 
 1. Build -> Prepare All Plugin Modules for Deployment -> OK -> OK -> Settings -> Plugins -> Install plugin from disk... -> Go to the plugin directory and select a created zip archive -> Ok -> Ok -> Restart
 2. Create file with your language extension and edit it
