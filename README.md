@@ -11,7 +11,7 @@ You can check out the whole project using git or download the last project versi
 
 **2. Create or open xText project, define grammar, launch generator and export plugins.**
 
-**3. Add Intellij IDEA plugin generator plugin as dependency to your xText project.**
+**3. Add the Intellij IDEA language plugin generator plugin as dependency to your xText project.**
 
 1. Open META-INF/MANIFEST.MF -> Dependencies -> Add... -> Select org.eclipse.xtext.generator.idea -> OK -> Save manifest
 
