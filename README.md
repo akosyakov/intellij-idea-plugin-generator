@@ -21,7 +21,7 @@ There are two generator fragments to add:
 * PsiAntlrGeneratorFragment generates Antlr grammar file and then uses Antlr tool to generate a parser and a lexer which are adapted to work with PsiBuilder.
 * IdeaPluginGenerator generates Intellij IDEA Language Plugin project.
 
-Look configuration example and read comments carefully:
+Look configuration example and read comments:
 ```
 //Added before workflow declaration
 var pluginsPath = "c:/eclipse-SDK-4.2-Xtext-2.3.1-win32/plugins"
@@ -56,7 +56,11 @@ component = Generator {
 
 **5. Run Language Generation workflow and export plugins again.**
 
-You will be able to find generated files under src-gen folder. For example for domain model language check org.example.domainmodel.lang package.
+You will be able to find generated files under src-gen folder. 
+For example for domain model language check org.example.domainmodel.lang package.
+
+Also you will be able to find the generated Intellij IDEA language plugin under path specified in pathIdeaPluginProject property of IdeaPluginGenerator fragment.
+For example for domain model language check "../org.example.domainmodel.idea" folder.
 
 **6. Open Intellij IDEA (supported version 12 and above) and open the generated Intellij IDEA language plugin.**
 
